@@ -75,4 +75,15 @@ return [x_values_mkt, y_values_mkt, x_values_btc, y_values_btc];
 
 x_val_mkt, y_val_mkt, x_val_btc, y_val_btc = driver.execute_script(get_hc_data)
 
-full_df['premium'] = 
+gbtc_df = pd.DataFrame(data = {'mkt_time': x_val_mkt, 'mkt_val': y_val_mkt, 'btc_time': x_val_btc, 'btc_val': y_val_btc})
+# todo: double check times are the same
+all(gbtc_df['mkt_time'] == gbtc_df['btc_time'])
+
+gbtc_df['mkt_time'] = pd.to_datetime(gbtc_df['mkt_time'], unit='ms', utc=True)
+gbtc_df.drop(columns='btc_time', inplace=True)
+gbtc_df.set_index('mkt_time', inplace=True)
+gbtc_df['premium'] = (gbtc_df['mkt_val'] - gbtc_df['btc_val']) / gbtc_df['btc_val']
+
+import matplotlib.pyplot as plt
+gbtc_df['premium'].plot()
+plt.show()
