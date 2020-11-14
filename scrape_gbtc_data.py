@@ -5,10 +5,15 @@ import pytz
 import pandas_market_calendars as mcal
 import pandas as pd
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
+import matplotlib.pyplot as plt
 
 import cufflinks as cf  # interactive plotting
 cf.go_offline()
+
+# annoying orca/plotly issue
+import plotly
+plotly.io.orca.config.executable = '/home/nate/anaconda3/envs/selenium/bin/orca'
 
 
 STORAGE = 'sqlite'
@@ -29,8 +34,8 @@ def load_page():
     try:
         close_button = driver.find_element_by_class_name('close-button')
         close_button.click()
-    except NoSuchElementException:
-        pass
+    except (NoSuchElementException, ElementNotInteractableException) as e:
+        print(e)
     
     return driver
 
@@ -194,3 +199,12 @@ if __name__ == "__main__":
         )]
     )
     fig.write_image(filename, scale=3)
+    fig.show()
+
+
+    gbtc_df.plot(subplots=True, logy=True)
+    plot = plt.gcf()
+    plot.axes[2].set_yscale('linear')
+    min_premium_date = gbtc_df['premium'].dropna().index.min()
+    plt.xlim(min_premium_date, gbtc_df.index.max())
+    plt.show()
